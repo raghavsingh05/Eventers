@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   title: "Eventers",
   description: "A seamless event planning and management platform.",
   icons:{
-    icon:''
+    icon:'/favicon.ico'
   }
 };
 
