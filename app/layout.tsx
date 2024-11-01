@@ -16,7 +16,7 @@ const poppins = Poppins({
 
 export const metadata: Metadata = {
   title: "Eventers",
-  description: "A seamless event planning and management platform.",
+  description: "A seamless event management platform.",
   icons:{
     icon:'/favicon.ico'
   }
