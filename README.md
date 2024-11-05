@@ -1,7 +1,7 @@
 # Eventers
 An online Event Management System
 
-The **Eventers** is a web and mobile-based platform designed to streamline the process of organizing events for hosts and simplifying guest management through QR code check-ins. Using the **MERN stack** (MongoDB, Express.js, React.js, Node.js) for the web app and a mobile app for scanning QR codes, this system provides real-time attendance tracking and event management.
+The **Eventers** is a web and mobile-based platform designed to streamline the process of organizing events for hosts and simplifying guest management through QR code check-ins. Using the **Next.js 14** for the web app and a mobile app for scanning QR codes, this system provides real-time attendance tracking and event management.
 
 The platform allows event hosts to create and manage events, track guest RSVPs, and view live attendance data. Guests can enroll in events via the web interface and check in using their QR codes at the event, reducing duplicate entries and ensuring smooth event execution.
 
@@ -38,12 +38,6 @@ Make sure you have the following installed:
    ```terminal
    npm install
 
-3. **Start Frontend**
+3. **Start the application**
    ```terminal
-   cd frontend
    npm run dev
-
-4. **Start Backend**
-   ```terminal
-   cd backend
-   npm start
