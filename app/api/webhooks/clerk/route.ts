@@ -75,7 +75,9 @@ export async function POST(req: Request) {
       })
     }
     
-    return NextResponse.json({message:'OK', user:newUser })
+    return new Response(JSON.stringify({message:'OK', user:newUser }), {
+      status: 200,
+    })
   }
   if (eventType === 'user.updated') {
     const {id, image_url, first_name, last_name, username } = evt.data
