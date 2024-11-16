@@ -11,6 +11,6 @@ export const config = {
     // Make "/" endpoint public
     '/',
     // Make "/api/webhooks" endpoint public
-    '/api/webhooks(.*)',
+    '/api/webhooks/clerk',
   ],
 };
