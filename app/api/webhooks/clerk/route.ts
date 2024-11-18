@@ -1,14 +1,14 @@
 import { Webhook } from 'svix';
 import { headers } from 'next/headers';
 import { WebhookEvent } from '@clerk/nextjs/server';
-import { connectToDatabase } from '@/lib/database';
-import User from '@/lib/database/models/user.model';
+import { createUser } from '@/lib/actions/user.actions';
 
 export async function POST(req: Request) {
   const SIGNING_SECRET = process.env.SIGNING_SECRET;
 
   if (!SIGNING_SECRET) {
-    throw new Error('Error: Please add SIGNING_SECRET from Clerk Dashboard to .env or your environment variables.');
+    console.error('SIGNING_SECRET is missing.');
+    return new Response('Error: Missing SIGNING_SECRET', { status: 500 });
   }
 
   const wh = new Webhook(SIGNING_SECRET);
@@ -43,30 +43,32 @@ export async function POST(req: Request) {
     const userData = evt.data;
 
     try {
-      console.log('Received user data:', userData);
-
-      // Connect to the database
-      await connectToDatabase();
-      console.log('Connected to database.');
-
-      // Create the user in the database
-      const newUser = await User.create({
-        clerkId: userData.id || '', // Clerk ID
-        email: userData.email_addresses[0]?.email_address || '', // Email
-        username: userData.username || '', // Username
-        firstName: userData.first_name || '', // First Name
-        lastName: userData.last_name || '', // Last Name
-        photo: userData.image_url || '', // Photo URL
+      const newUser = await createUser({
+        email: userData.email_addresses?.[0]?.email_address || '',
+        firstName: userData.first_name || '',
+        lastName: userData.last_name || '',
+        clerkId: userData.id || '',
+        username: userData.external_accounts?.[0]?.username || '', // Using `null` fallback if username is absent
+        photo: userData.image_url || '',
       });
 
       console.log('New user created:', newUser);
+      return new Response('User created successfully', { status: 201 });
     } catch (error) {
-      console.error('Error creating user:', error instanceof Error ? error : new Error(String(error)));
-      return new Response(JSON.stringify({ message: 'Error creating user', error: error instanceof Error ? error.message : 'Unknown error' }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      });
-   }
+      if (error instanceof Error) {
+        console.error('Error creating user:', error.message);
+        return new Response(
+          JSON.stringify({ message: 'Error creating user', error: error.message }),
+          { status: 500, headers: { 'Content-Type': 'application/json' } }
+        );
+      } else {
+        console.error('Unexpected error:', error);
+        return new Response(
+          JSON.stringify({ message: 'Error creating user', error: 'Unknown error occurred' }),
+          { status: 500, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+    }
   }
 
   return new Response('Webhook processed successfully', { status: 200 });
