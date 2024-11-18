@@ -1,9 +1,8 @@
 import { Webhook } from 'svix';
 import { headers } from 'next/headers';
 import { WebhookEvent } from '@clerk/nextjs/server';
-import { createUser } from '@/lib/actions/user.actions';
-
-// import { createUser } from '../../lib/actions/user.actions'; 
+import { connectToDatabase } from '@/lib/database';
+import User from '@/lib/database/models/user.model';
 
 export async function POST(req: Request) {
   const SIGNING_SECRET = process.env.SIGNING_SECRET;
@@ -44,12 +43,19 @@ export async function POST(req: Request) {
     const userData = evt.data;
 
     try {
-      const newUser = await createUser({
+      console.log('Received user data:', userData);
+
+      // Connect to the database
+      await connectToDatabase();
+      console.log('Connected to database.');
+
+      // Create the user in the database
+      const newUser = await User.create({
+        clerkId: userData.id || '', // Clerk ID
         email: userData.email_addresses[0]?.email_address || '', // Email
-        firstName: userData.first_name || '', // First name
-        lastName: userData.last_name || '', // Last name
-        clerkUserId: userData.id || '', // Clerk User ID
         username: userData.username || '', // Username
+        firstName: userData.first_name || '', // First Name
+        lastName: userData.last_name || '', // Last Name
         photo: userData.image_url || '', // Photo URL
       });
 
