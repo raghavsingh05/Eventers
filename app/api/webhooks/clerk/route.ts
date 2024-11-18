@@ -47,7 +47,7 @@ export async function POST(req: Request) {
         email: userData.email_addresses?.[0]?.email_address || '',
         firstName: userData.first_name || '',
         lastName: userData.last_name || '',
-        clerkId: userData.id || '',
+        clerkId: userData.id,
         username: userData.external_accounts?.[0]?.username || '', // Using `null` fallback if username is absent
         photo: userData.image_url || '',
       });
