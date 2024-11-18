@@ -1,6 +1,9 @@
 import { Webhook } from 'svix';
 import { headers } from 'next/headers';
 import { WebhookEvent } from '@clerk/nextjs/server';
+import { createUser } from '@/lib/actions/user.actions';
+
+// import { createUser } from '../../lib/actions/user.actions'; 
 
 export async function POST(req: Request) {
   const SIGNING_SECRET = process.env.SIGNING_SECRET;
@@ -9,21 +12,16 @@ export async function POST(req: Request) {
     throw new Error('Error: Please add SIGNING_SECRET from Clerk Dashboard to .env or your environment variables.');
   }
 
-  // Create new Svix instance with secret
   const wh = new Webhook(SIGNING_SECRET);
-
-  // Get headers
   const headerPayload = headers();
   const svix_id = headerPayload.get('svix-id');
   const svix_timestamp = headerPayload.get('svix-timestamp');
   const svix_signature = headerPayload.get('svix-signature');
 
-  // If headers are missing, respond with an error
   if (!svix_id || !svix_timestamp || !svix_signature) {
     return new Response('Error: Missing Svix headers', { status: 400 });
   }
 
-  // Parse and verify the payload
   const payload = await req.json();
   const body = JSON.stringify(payload);
 
@@ -40,12 +38,27 @@ export async function POST(req: Request) {
     return new Response('Error: Verification failed', { status: 400 });
   }
 
-  // Handle the verified payload
-  const { id } = evt.data;
   const eventType = evt.type;
 
-  console.log(`Received webhook with ID ${id} and event type: ${eventType}`);
-  console.log('Webhook payload:', body);
+  if (eventType === 'user.created') {
+    const userData = evt.data;
+
+    try {
+      const newUser = await createUser({
+        email: userData.email_addresses[0]?.email_address || '', // Email
+        firstName: userData.first_name || '', // First name
+        lastName: userData.last_name || '', // Last name
+        clerkUserId: userData.id || '', // Clerk User ID
+        username: userData.username || '', // Username
+        photo: userData.image_url || '', // Photo URL
+      });
+
+      console.log('New user created:', newUser);
+    } catch (error) {
+      console.error('Error creating user:', error);
+      return new Response('Error: Could not create user', { status: 500 });
+    }
+  }
 
   return new Response('Webhook processed successfully', { status: 200 });
 }
