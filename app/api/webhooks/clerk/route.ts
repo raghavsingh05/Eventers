@@ -61,9 +61,12 @@ export async function POST(req: Request) {
 
       console.log('New user created:', newUser);
     } catch (error) {
-      console.error('Error creating user:', error);
-      return new Response('Error: Could not create user', { status: 500 });
-    }
+      console.error('Error creating user:', error instanceof Error ? error : new Error(String(error)));
+      return new Response(JSON.stringify({ message: 'Error creating user', error: error instanceof Error ? error.message : 'Unknown error' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      });
+   }
   }
 
   return new Response('Webhook processed successfully', { status: 200 });
