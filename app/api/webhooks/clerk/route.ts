@@ -43,12 +43,21 @@ export async function POST(req: Request) {
     const userData = evt.data;
 
     try {
+      // Ensure that username and lastName are set
+      const username = userData.external_accounts?.[0]?.username || `${userData.first_name}${userData.last_name}`;
+      const lastName = userData.last_name || userData.first_name || 'Unknown';
+
+      // Ensure that firstName, lastName, and username are non-empty
+      if (!username || !lastName || !userData.first_name) {
+        throw new Error('Missing required user details: username, firstName, or lastName');
+      }
+
       const newUser = await createUser({
         email: userData.email_addresses?.[0]?.email_address || '',
         firstName: userData.first_name || '',
-        lastName: userData.last_name || '',
-        clerkId: userData.id,
-        username: userData.external_accounts?.[0]?.username || '', // Using `null` fallback if username is absent
+        lastName: lastName,          // Ensure last name is populated
+        clerkId: userData.id || '',  // Use clerkId here
+        username: username,          // Ensure username is populated
         photo: userData.image_url || '',
       });
 
