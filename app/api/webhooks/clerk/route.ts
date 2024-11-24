@@ -62,7 +62,7 @@ export async function POST(req: Request) {
       await deleteUser(userData.id || '');
     }
 
-    return new Response('Webhook processed successfully', { status: 200 });
+    return new Response('Webhook processed successfully ', { status: 200 });
   } catch (error) {
     console.error('Error processing event:', error);
     return new Response(JSON.stringify({ message: 'Error processing event', error }), { status: 500 });
