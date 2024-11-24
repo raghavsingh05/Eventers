@@ -53,7 +53,7 @@ export async function POST(req: Request) {
       const userData = evt.data;
       await updateUser(userData.id, {
         firstName: userData.first_name || '',
-        lastName: userData.last_name || '',
+        lastName: userData.last_name || ' ',
         username: userData.username || '',
         photo: userData.image_url || '',
       });
