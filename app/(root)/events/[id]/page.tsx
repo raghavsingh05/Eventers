@@ -79,7 +79,6 @@ const EventDetails = async ({ params: { id }, searchParams }: SearchParamProps) 
           limit={6}
           page={1}
           totalPages={2}
-
         />
         </section>
         </>

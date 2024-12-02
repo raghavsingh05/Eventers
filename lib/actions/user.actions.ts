@@ -34,6 +34,18 @@ export async function getUserById(userId: string) {
   }
 }
 
+export async function getCurrentUserId(clerkId:string){
+  try{
+
+    await connectToDatabase()
+    const eventOrganizer = await User.findOne({ clerkId: clerkId });
+    const userId = eventOrganizer._id
+    return JSON.parse(JSON.stringify(userId))
+  } catch(e){
+    handleError(e)
+  }
+}
+
 export async function updateUser(clerkId: string, user: UpdateUserParams) {
   try {
     await connectToDatabase()

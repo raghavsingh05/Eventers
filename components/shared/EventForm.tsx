@@ -14,7 +14,6 @@ import { useState } from "react"
 import Image from "next/image"
 import DatePicker from "react-datepicker"
 import "react-datepicker/dist/react-datepicker.css";
-import { Date as MongooseDate } from "mongoose"
 import { Checkbox } from "@/components/ui/checkbox"
 import {useUploadThing} from '@/lib/uploadthing'
 import CreateEvent from "@/app/(root)/events/create/page"
@@ -25,7 +24,7 @@ import { IEvent } from "@/lib/database/models/event.model"
 type EventFormProps = {
     userId: string
     type: "Create" | "Update"
-    event:IEvent
+    event?:IEvent
     eventId?: string
 }
 

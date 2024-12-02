@@ -7,6 +7,7 @@ import { currentUser } from "@clerk/nextjs/server";
 import { connectToDatabase } from '@/lib/database'
 import User from '@/lib/database/models/user.model'
 import { DeleteConfirmation } from './DeleteConfirmation'
+import { getCurrentUserId } from '@/lib/actions/user.actions'
 
 type CardProps = {
     event: IEvent,
@@ -16,10 +17,9 @@ type CardProps = {
 
 const Card = async ({ event, hasOrderLink, hidePrice }: CardProps) => {
     const user = await currentUser();
-    const userId = user?.id as string;
-    await connectToDatabase()
-    const eventOrganizer = await User.findOne({ clerkId: userId });
-    const isEventCreator = eventOrganizer._id.toString() === event.organizer._id.toString()
+    const clerkId = user?.id as string;
+    const userId = await getCurrentUserId(clerkId)
+    const isEventCreator = userId === event.organizer._id.toString()
     return (
         <div className='group relative flex min-h-[380px] w-full max-w-[400px] flex-col overflow-hidden rounded-xl bg-white shadow-md transition-all hover:shadow-lg md:min-h-[438px]'>
             <Link href={`/events/${event._id}`}
@@ -34,8 +34,7 @@ const Card = async ({ event, hasOrderLink, hidePrice }: CardProps) => {
                     <DeleteConfirmation eventId={event._id} />
                 </div>
             )}
-            <Link
-                href={`/events/${event._id}`}
+            <div
                 className='flex min-h[230px] flex-col gap-3 p-5 md:gap-4'>
                 {!hidePrice && <div className='flex gap-2'>
                     <span className='p-semibold-14 w-min rounded-full bg-green-100 px-4 py-1 text-green-60'>
@@ -49,9 +48,11 @@ const Card = async ({ event, hasOrderLink, hidePrice }: CardProps) => {
                 <p className='p-medium-16 p-medium-18 text-grey-500'>
                     {formatDateTime(event.startDateTime).dateTime}
                 </p>
-                <p className='p-medium-16 md:p-medium-20 line-clamp-2 flex-1 text-black'>
-                    {event.title}
-                </p>
+                <Link href={`/events/${event._id}`}>
+                    <p className='p-medium-16 md:p-medium-20 line-clamp-2 flex-1 text-black'>
+                        {event.title}
+                    </p>
+                </Link>
                 <div className='flex-between w-full'>
                     <p className='p-medium-14 md:p-medium-16 text-grey-600'>
                         {event.organizer.firstName} {event.organizer.lastName}
@@ -63,7 +64,7 @@ const Card = async ({ event, hasOrderLink, hidePrice }: CardProps) => {
                         </Link>
                     )}
                 </div>
-            </Link>
+            </div>
         </div>
     )
 }
