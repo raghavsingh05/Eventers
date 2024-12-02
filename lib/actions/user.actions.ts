@@ -42,7 +42,7 @@ export async function getCurrentUserId(clerkId:string){
     const userId = eventOrganizer._id
     return JSON.parse(JSON.stringify(userId))
   } catch(e){
-    handleError(e)
+    // handleError(e)
   }
 }
 
