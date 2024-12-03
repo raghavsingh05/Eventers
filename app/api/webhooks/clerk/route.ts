@@ -44,7 +44,7 @@ export async function POST(req: Request) {
       await createUser({
         email: userData.email_addresses[0]?.email_address || '',
         firstName: userData.first_name || '',
-        lastName: userData.last_name || '',
+        lastName: userData.last_name ?? "null", // Use null if last name is undefined or empty
         clerkId: userData.id || '',
         username: userData.username || '',
         photo: userData.image_url || '',
@@ -53,7 +53,7 @@ export async function POST(req: Request) {
       const userData = evt.data;
       await updateUser(userData.id, {
         firstName: userData.first_name || '',
-        lastName: userData.last_name || ' ',
+        lastName: userData.last_name ?? "null", // Use null if last name is undefined or empty
         username: userData.username || '',
         photo: userData.image_url || '',
       });
@@ -62,7 +62,7 @@ export async function POST(req: Request) {
       await deleteUser(userData.id || '');
     }
 
-    return new Response('Webhook processed successfully ', { status: 200 });
+    return new Response('Webhook processed successfully', { status: 200 });
   } catch (error) {
     console.error('Error processing event:', error);
     return new Response(JSON.stringify({ message: 'Error processing event', error }), { status: 500 });
