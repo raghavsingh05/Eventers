@@ -2,7 +2,7 @@ import Search  from '@/components/shared/Search'
 import { formatDateTime, formatPrice } from '@/lib/utils'
 import { SearchParamProps } from '@/types'
 import { IOrderItem } from '@/lib/database/models/order.model'
-import { getOrdersByEvent } from '@/app/api/checkout/route'
+import { getOrdersByEvent } from '@/lib/services/orderService'
 
 const Orders = async ({ searchParams }: SearchParamProps) => {
   const eventId = (searchParams?.event as string) || ''

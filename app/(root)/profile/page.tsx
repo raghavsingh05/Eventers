@@ -1,4 +1,3 @@
-import { getOrdersByUser } from '@/app/api/checkout/route'
 import Collection from '@/components/shared/Collection'
 import { Button } from '@/components/ui/button'
 import { getEventsByUser } from '@/lib/actions/event.actions'
@@ -10,6 +9,7 @@ import { currentUser } from '@clerk/nextjs/server'
 import Link from 'next/link'
 import React from 'react'
 import { SearchParamProps } from '@/types'
+import { getOrdersByUser } from '@/lib/services/orderService'
 
 const ProfilePage = async({ searchParams }: SearchParamProps) => {
   const user = await currentUser();
