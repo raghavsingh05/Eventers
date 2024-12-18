@@ -28,7 +28,6 @@ const Checkout = ({ event }: { event: IEvent }) => {
       return data;
     });
 
-    // Use Sonner's toast.promise for cleaner feedback
     toast.promise(checkoutPromise, {
       loading: 'Processing your checkout...',
       success: 'Checkout successful! Redirecting...',
@@ -37,7 +36,7 @@ const Checkout = ({ event }: { event: IEvent }) => {
 
     try {
       const result = await checkoutPromise;
-      router.push('/profile'); // Redirect after successful booking
+      router.push('/orders');
     } catch (error) {
       console.error('Error during checkout:', error);
       toast.error(`Error during checkout: ${error instanceof Error ? error.message : 'Something went wrong'}`);

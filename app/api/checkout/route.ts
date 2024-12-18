@@ -5,6 +5,9 @@ import Event from '@/lib/database/models/event.model';
 import User from '@/lib/database/models/user.model';
 import { currentUser } from '@clerk/nextjs/server';
 import { getCurrentUserId } from '@/lib/actions/user.actions';
+import { CheckoutOrderParams, CreateOrderParams, GetOrdersByEventParams, GetOrdersByUserParams } from "@/types"
+import {ObjectId} from 'mongodb';
+import { handleError } from '@/lib/utils';
 
 export async function POST(req: NextRequest) {
   try {
@@ -56,5 +59,96 @@ export async function POST(req: NextRequest) {
       { message: 'Internal Server Error' },
       { status: 500 }
     );
+  }
+}
+
+export async function getOrdersByEvent({ searchString, eventId }: GetOrdersByEventParams) {
+  try {
+    await connectToDatabase();
+
+    if (!eventId) throw new Error('Event ID is required');
+
+    const eventObjectId = new ObjectId(eventId);
+
+    const orders = await Order.aggregate([
+      {
+        $match: {
+          event: eventObjectId,
+        },
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'buyer', // Field storing the buyer's reference
+          foreignField: '_id',
+          as: 'buyer',
+        },
+      },
+      { $unwind: '$buyer' },
+      {
+        $lookup: {
+          from: 'events',
+          localField: 'event',
+          foreignField: '_id',
+          as: 'event',
+        },
+      },
+      { $unwind: '$event' },
+      {
+        $match: {
+          'buyer.firstName': { $regex: new RegExp(searchString, 'i') },
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          totalAmount: 1,
+          createdAt: 1,
+          eventTitle: '$event.title',
+          eventId: '$event._id',
+          buyer: {
+            $concat: ['$buyer.firstName', ' ', '$buyer.lastName'],
+          },
+        },
+      },
+    ]);
+
+    return JSON.parse(JSON.stringify(orders));
+  } catch (error) {
+    handleError(error);
+  }
+}
+
+export async function getOrdersByUser({ userId, limit = 3, page }: GetOrdersByUserParams) {
+  try {
+    await connectToDatabase();
+
+    if (!userId) throw new Error('User ID is required');
+
+    const skipAmount = (Number(page) - 1) * limit;
+
+    const orders = await Order.find({ buyer: new ObjectId(userId as string) })
+      .sort({ createdAt: 'desc' })
+      .skip(skipAmount)
+      .limit(limit)
+      .populate({
+        path: 'event',
+        model: Event,
+        select: '_id title price',
+        populate: {
+          path: 'organizer',
+          model: User,
+          select: '_id firstName lastName',
+        },
+      });
+
+    const ordersCount = await Order.countDocuments({ buyer: new ObjectId(userId as string) });
+
+    return {
+      data: JSON.parse(JSON.stringify(orders)),
+      totalPages: Math.ceil(ordersCount / limit),
+    };
+  } catch (error) {
+    handleError(error);
   }
 }
