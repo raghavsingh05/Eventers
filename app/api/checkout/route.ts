@@ -5,8 +5,13 @@ import Event from '@/lib/database/models/event.model';
 import User from '@/lib/database/models/user.model';
 import { currentUser } from '@clerk/nextjs/server';
 import { getCurrentUserId } from '@/lib/actions/user.actions';
-import { CheckoutOrderParams, CreateOrderParams, GetOrdersByEventParams, GetOrdersByUserParams } from "@/types"
-import {ObjectId} from 'mongodb';
+import {
+  CheckoutOrderParams,
+  CreateOrderParams,
+  GetOrdersByEventParams,
+  GetOrdersByUserParams,
+} from '@/types';
+import { ObjectId } from 'mongodb';
 import { handleError } from '@/lib/utils';
 
 export async function POST(req: NextRequest) {
@@ -17,7 +22,8 @@ export async function POST(req: NextRequest) {
 
     const user = await currentUser();
     const clerkId = user?.id as string;
-    const userId = await getCurrentUserId(clerkId)
+    const userId = await getCurrentUserId(clerkId);
+
     const buyer = await User.findById(userId).select('_id firstName lastName');
     if (!buyer) {
       return NextResponse.json({ message: 'User not found' }, { status: 404 });
@@ -35,7 +41,10 @@ export async function POST(req: NextRequest) {
     });
 
     if (existingOrder) {
-      return NextResponse.json({ message: 'Order already exists for this event' }, { status: 409 });
+      return NextResponse.json(
+        { message: 'Order already exists for this event' },
+        { status: 409 }
+      );
     }
 
     const newOrder = new Order({
@@ -62,7 +71,10 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function getOrdersByEvent({ searchString, eventId }: GetOrdersByEventParams) {
+export async function getOrdersByEvent({
+  searchString,
+  eventId,
+}: GetOrdersByEventParams) {
   try {
     await connectToDatabase();
 
@@ -79,7 +91,7 @@ export async function getOrdersByEvent({ searchString, eventId }: GetOrdersByEve
       {
         $lookup: {
           from: 'users',
-          localField: 'buyer', // Field storing the buyer's reference
+          localField: 'buyer',
           foreignField: '_id',
           as: 'buyer',
         },
@@ -119,7 +131,11 @@ export async function getOrdersByEvent({ searchString, eventId }: GetOrdersByEve
   }
 }
 
-export async function getOrdersByUser({ userId, limit = 3, page }: GetOrdersByUserParams) {
+export async function getOrdersByUser({
+  userId,
+  limit = 3,
+  page,
+}: GetOrdersByUserParams) {
   try {
     await connectToDatabase();
 
@@ -127,6 +143,7 @@ export async function getOrdersByUser({ userId, limit = 3, page }: GetOrdersByUs
 
     const skipAmount = (Number(page) - 1) * limit;
 
+    // Fetch orders and populate event data with imageUrl
     const orders = await Order.find({ buyer: new ObjectId(userId as string) })
       .sort({ createdAt: 'desc' })
       .skip(skipAmount)
@@ -134,7 +151,7 @@ export async function getOrdersByUser({ userId, limit = 3, page }: GetOrdersByUs
       .populate({
         path: 'event',
         model: Event,
-        select: '_id title price',
+        select: '_id title imageUrl price', // Include imageUrl here
         populate: {
           path: 'organizer',
           model: User,
@@ -142,8 +159,11 @@ export async function getOrdersByUser({ userId, limit = 3, page }: GetOrdersByUs
         },
       });
 
-    const ordersCount = await Order.countDocuments({ buyer: new ObjectId(userId as string) });
+    const ordersCount = await Order.countDocuments({
+      buyer: new ObjectId(userId as string),
+    });
 
+    // Return the structured response
     return {
       data: JSON.parse(JSON.stringify(orders)),
       totalPages: Math.ceil(ordersCount / limit),

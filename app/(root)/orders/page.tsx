@@ -1,18 +1,12 @@
+import Search  from '@/components/shared/Search'
 import { formatDateTime, formatPrice } from '@/lib/utils'
 import { SearchParamProps } from '@/types'
 import { IOrderItem } from '@/lib/database/models/order.model'
 import { getOrdersByEvent } from '@/app/api/checkout/route'
-import Search from '@/components/shared/Search'
 
 const Orders = async ({ searchParams }: SearchParamProps) => {
   const eventId = (searchParams?.event as string) || ''
   const searchText = (searchParams?.query as string) || ''
-
-  // Check if eventId is valid before sending it to getOrdersByEvent
-  if (!eventId) {
-    console.error('Invalid event ID');
-    return;
-  }
 
   const orders = await getOrdersByEvent({ eventId, searchString: searchText })
 
@@ -59,8 +53,7 @@ const Orders = async ({ searchParams }: SearchParamProps) => {
                         {formatDateTime(row.createdAt).dateTime}
                       </td>
                       <td className="min-w-[100px] py-4 text-right">
-                        {/* {formatPrice(row.totalAmount)} */}
-                        Free
+                        {formatPrice(row.totalAmount)}
                       </td>
                     </tr>
                   ))}
