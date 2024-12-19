@@ -10,6 +10,7 @@ import Link from 'next/link'
 import React from 'react'
 import { SearchParamProps } from '@/types'
 import { getOrdersByUser } from '@/lib/services/orderService'
+import { IEvent } from '@/lib/database/models/event.model'
 
 const ProfilePage = async({ searchParams }: SearchParamProps) => {
   const user = await currentUser();
@@ -34,7 +35,7 @@ const ProfilePage = async({ searchParams }: SearchParamProps) => {
       </section>
       <section className="wrapper my-8">
         <Collection 
-          data={orderedEvents}
+          data={orderedEvents as IEvent[]}
           emptyTitle="No event tickets purchased yet"
           emptyStateSubtext="No worries - plenty of exciting events to explore!"
           collectionType="My_Tickets"
