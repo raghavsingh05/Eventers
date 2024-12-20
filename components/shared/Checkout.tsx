@@ -36,7 +36,7 @@ const Checkout = ({ event }: { event: IEvent }) => {
 
     try {
       const result = await checkoutPromise;
-      router.push('/orders');
+      router.push('/profile');
     } catch (error) {
       console.error('Error during checkout:', error);
       toast.error(`Error during checkout: ${error instanceof Error ? error.message : 'Something went wrong'}`);
